@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeuroMatch · Psicofarmacología Clínica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080C14;
+  --bg2:#0D1421;
+  --bg3:#121C2E;
+  --card:#141E32;
+  --card2:#1A2640;
+  --border:rgba(100,180,255,0.12);
+  --border2:rgba(100,180,255,0.22);
+  --cyan:#38BDF8;
+  --cyan2:#0EA5E9;
+  --green:#34D399;
+  --green2:#10B981;
+  --amber:#FBBF24;
+  --amber2:#F59E0B;
+  --red:#F87171;
+  --red2:#EF4444;
+  --purple:#A78BFA;
+  --purple2:#7C3AED;
+  --pink:#F472B6;
+  --white:#F0F6FF;
+  --muted:#6B85A8;
+  --r:10px;
+  --r2:6px;
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Syne',sans-serif;
+  background:var(--bg);
+  color:var(--white);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+/* grid bg */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(56,189,248,0.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(56,189,248,0.04) 1px,transparent 1px);
+  background-size:40px 40px;
+  pointer-events:none;z-index:0;
+}
+#app{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:0 1rem 4rem}
+
+/* ── SCREENS ── */
+.screen{display:none;animation:fadeIn 0.35s ease}
+.screen.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* ── TOP BAR ── */
+.topbar{
+  position:fixed;top:0;left:0;right:0;
+  background:rgba(8,12,20,0.92);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(12px);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 1.5rem;z-index:200;
+}
+.topbar-logo{
+  font-family:'Syne',sans-serif;
+  font-size:15px;font-weight:800;
+  color:var(--cyan);letter-spacing:-0.03em;
+}
+.topbar-logo span{color:var(--white)}
+.topbar-score{
+  display:flex;gap:12px;align-items:center;
+  font-family:'JetBrains Mono',monospace;font-size:12px;
+}
+.score-chip{
+  background:var(--card2);border:1px solid var(--border);
+  border-radius:20px;padding:4px 12px;
+  display:flex;align-items:center;gap:5px;
+}
+.score-chip.pts{color:var(--cyan);border-color:rgba(56,189,248,0.3)}
+.score-chip.streak{color:var(--amber);border-color:rgba(251,191,36,0.3)}
+.screen{padding-top:60px}
+
+/* ── HOME ── */
+.home-hero{
+  text-align:center;padding:3rem 1rem 2rem;
+}
+.home-eyebrow{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;letter-spacing:0.25em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:1rem;
+  display:flex;align-items:center;gap:10px;justify-content:center;
+}
+.home-eyebrow::before,.home-eyebrow::after{
+  content:'';width:40px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--muted));
+}
+.home-eyebrow::after{background:linear-gradient(90deg,var(--muted),transparent)}
+.home-title{
+  font-size:clamp(36px,7vw,64px);
+  font-weight:800;letter-spacing:-0.04em;
+  line-height:1;margin-bottom:0.5rem;
+}
+.home-title .t1{color:var(--white)}
+.home-title .t2{
+  color:transparent;
+  -webkit-text-stroke:1px var(--cyan);
+}
+.home-sub{
+  font-family:'Instrument Serif',serif;
+  font-size:18px;font-style:italic;
+  color:var(--muted);margin-bottom:2.5rem;
+}
+
+/* ── GAME GRID ── */
+.game-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);
+  gap:12px;max-width:680px;margin:0 auto;
+}
+.game-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:1.5rem;cursor:pointer;
+  text-align:left;transition:all 0.2s;
+  position:relative;overflow:hidden;
+}
+.game-card::after{
+  content:'';position:absolute;
+  top:-50%;left:-50%;width:200%;height:200%;
+  background:radial-gradient(circle at center,rgba(56,189,248,0.06),transparent 60%);
+  opacity:0;transition:opacity 0.3s;
+}
+.game-card:hover{border-color:var(--border2);transform:translateY(-2px)}
+.game-card:hover::after{opacity:1}
+.game-card .gc-num{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;color:var(--muted);
+  margin-bottom:12px;display:flex;align-items:center;gap:6px;
+}
+.game-card .gc-num::before{
+  content:'';width:20px;height:1px;background:currentColor;
+}
+.game-card .gc-icon{font-size:28px;margin-bottom:10px;display:block}
+.game-card .gc-title{font-size:16px;font-weight:700;color:var(--white);margin-bottom:5px}
+.game-card .gc-desc{font-size:13px;color:var(--muted);line-height:1.5}
+.game-card .gc-tag{
+  display:inline-block;
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  padding:2px 8px;border-radius:20px;margin-top:10px;
+}
+.tag-cyan{background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.3);color:var(--cyan)}
+.tag-green{background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);color:var(--green)}
+.tag-amber{background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);color:var(--amber)}
+.tag-red{background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:var(--red)}
+.tag-purple{background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.3);color:var(--purple)}
+
+/* ── PROGRESS STATS ── */
+.prog-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:8px;max-width:680px;margin:1.5rem auto 0;
+}
+.prog-stat{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r2);padding:12px;text-align:center;
+}
+.prog-stat .pn{
+  font-family:'JetBrains Mono',monospace;
+  font-size:18px;font-weight:700;color:var(--cyan);display:block;
+}
+.prog-stat .pl{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* ── SECTION HEADERS ── */
+.sec-head{padding:2rem 0 1.5rem}
+.sec-eyebrow{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;letter-spacing:0.2em;text-transform:uppercase;
+  color:var(--cyan);margin-bottom:8px;
+}
+.sec-title{
+  font-size:clamp(20px,3vw,28px);font-weight:800;
+  letter-spacing:-0.03em;color:var(--white);
+  margin-bottom:6px;line-height:1.2;
+}
+.sec-desc{font-size:14px;color:var(--muted);line-height:1.6;max-width:560px}
+.back-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  background:none;border:none;
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;color:var(--muted);cursor:pointer;
+  padding:0;margin-bottom:1.5rem;transition:color 0.2s;
+  letter-spacing:0.05em;
+}
+.back-btn:hover{color:var(--white)}
+
+/* ── PROGRESS BAR ── */
+.pbar{height:3px;background:var(--card2);border-radius:2px;margin-bottom:1.5rem}
+.pbar-fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--green));border-radius:2px;transition:width 0.4s}
+
+/* ── GAME 1: PATIENT PROFILER ── */
+.patient-card{
+  background:linear-gradient(135deg,var(--card) 0%,var(--card2) 100%);
+  border:1px solid var(--border2);
+  border-radius:var(--r);
+  padding:1.5rem;margin-bottom:1rem;
+  position:relative;overflow:hidden;
+}
+.patient-card::before{
+  content:'';position:absolute;top:0;right:0;
+  width:180px;height:180px;
+  background:radial-gradient(circle,rgba(56,189,248,0.08),transparent 70%);
+  pointer-events:none;
+}
+.patient-avatar{
+  width:48px;height:48px;border-radius:50%;
+  background:var(--bg3);border:2px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;margin-bottom:12px;
+}
+.patient-name{font-size:18px;font-weight:700;color:var(--white);margin-bottom:2px}
+.patient-meta{font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-bottom:12px}
+.patient-complaint{
+  font-family:'Instrument Serif',serif;
+  font-size:15px;font-style:italic;
+  color:var(--white);line-height:1.7;
+  padding:12px 16px;
+  background:rgba(56,189,248,0.05);
+  border-left:2px solid var(--cyan);
+  border-radius:0 var(--r2) var(--r2) 0;
+  margin-bottom:12px;
+}
+.question-block{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:1.25rem;margin-bottom:1rem;
+}
+.q-step{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;color:var(--cyan);letter-spacing:0.15em;
+  text-transform:uppercase;margin-bottom:8px;
+}
+.q-text{font-size:15px;font-weight:600;color:var(--white);margin-bottom:1rem;line-height:1.5}
+.q-opts{display:flex;flex-direction:column;gap:8px}
+.q-opt{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--r2);padding:11px 15px;
+  font-size:14px;color:var(--white);
+  cursor:pointer;text-align:left;
+  font-family:'Syne',sans-serif;
+  transition:all 0.15s;line-height:1.4;
+  display:flex;align-items:flex-start;gap:10px;
+}
+.q-opt::before{
+  content:'';width:16px;height:16px;
+  border-radius:50%;border:1.5px solid var(--muted);
+  flex-shrink:0;margin-top:1px;
+  transition:all 0.15s;
+}
+.q-opt:hover:not(:disabled){border-color:var(--border2);background:var(--card2)}
+.q-opt:hover:not(:disabled)::before{border-color:var(--cyan)}
+.q-opt.selected{border-color:var(--cyan);background:rgba(56,189,248,0.06)}
+.q-opt.selected::before{background:var(--cyan);border-color:var(--cyan)}
+.q-opt:disabled{cursor:default}
+
+/* Profile result */
+.profile-result{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--r);padding:1.5rem;margin-top:1rem;
+}
+.profile-result .pr-label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;letter-spacing:0.2em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:6px;
+}
+.profile-item{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 0;border-bottom:1px solid var(--border);
+}
+.profile-item:last-child{border:none}
+.profile-dot{
+  width:8px;height:8px;border-radius:50%;flex-shrink:0;
+}
+.profile-key{font-size:13px;color:var(--muted);flex:1}
+.profile-val{font-size:13px;font-weight:600;color:var(--white)}
+
+/* Drug reveal */
+.drug-reveal{
+  background:linear-gradient(135deg,rgba(56,189,248,0.08),rgba(52,211,153,0.06));
+  border:1px solid rgba(56,189,248,0.3);
+  border-radius:var(--r);padding:1.5rem;margin-top:1rem;
+  animation:fadeIn 0.4s ease;
+}
+.drug-reveal .dr-title{
+  font-size:11px;letter-spacing:0.2em;text-transform:uppercase;
+  font-family:'JetBrains Mono',monospace;color:var(--cyan);
+  margin-bottom:6px;
+}
+.drug-name{font-size:22px;font-weight:800;color:var(--white);margin-bottom:4px}
+.drug-class{font-size:13px;color:var(--cyan);font-family:'JetBrains Mono',monospace;margin-bottom:12px}
+.drug-why{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:12px}
+.drug-ecuador{
+  background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);
+  border-radius:var(--r2);padding:10px 14px;
+  font-size:13px;color:var(--green);
+}
+.drug-ecuador strong{display:block;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:3px;opacity:0.7}
+.stahl-ref{
+  margin-top:10px;
+  background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.2);
+  border-radius:var(--r2);padding:10px 14px;
+  font-size:12px;color:var(--purple);font-family:'JetBrains Mono',monospace;
+}
+
+/* ── GAME 2: MECHANISM DRILL ── */
+.drill-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:1.5rem;margin-bottom:1rem;
+}
+.drill-family{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:6px 14px;border-radius:20px;
+  font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;
+  margin-bottom:1rem;
+}
+.drill-question{font-size:16px;font-weight:600;color:var(--white);margin-bottom:1rem;line-height:1.5}
+.drill-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:520px){.drill-opts{grid-template-columns:1fr}}
+.drill-opt{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--r2);padding:12px 14px;
+  font-size:13px;color:var(--white);cursor:pointer;
+  font-family:'Syne',sans-serif;transition:all 0.15s;
+  line-height:1.4;text-align:left;
+}
+.drill-opt:hover:not(:disabled){border-color:var(--border2);background:var(--card2)}
+.drill-opt.correct{background:rgba(52,211,153,0.12);border-color:var(--green);color:#B0FFE0}
+.drill-opt.wrong{background:rgba(248,113,113,0.1);border-color:var(--red);color:#FFCCCC}
+.drill-opt:disabled{cursor:default}
+.drill-exp{
+  background:var(--bg3);border-left:3px solid var(--green);
+  border-radius:0 var(--r2) var(--r2) 0;
+  padding:12px 16px;margin-top:1rem;
+  font-size:13.5px;line-height:1.7;color:var(--white);
+}
+.drill-exp.wrong-exp{border-color:var(--red)}
+.drill-exp strong{display:block;margin-bottom:4px;font-size:14px}
+.nt-pills{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}
+.nt-pill{
+  padding:2px 10px;border-radius:20px;
+  font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;
+}
+.mastery-bar{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--r2);padding:12px 14px;margin-bottom:1rem;
+}
+.mastery-row{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.mastery-label{font-size:12px;color:var(--muted);flex:1;font-family:'JetBrains Mono',monospace}
+.mastery-track{flex:2;height:5px;background:var(--bg);border-radius:3px}
+.mastery-fill{height:100%;border-radius:3px;transition:width 0.4s}
+.mastery-pct{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--white);width:32px;text-align:right}
+
+/* ── GAME 3: ADVERSE EFFECTS ── */
+.ae-scenario{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:1.25rem;margin-bottom:1rem;
+}
+.ae-patient{
+  display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;
+}
+.ae-avatar{
+  width:42px;height:42px;border-radius:50%;
+  background:var(--bg3);border:2px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;flex-shrink:0;
+}
+.ae-info .ae-name{font-size:14px;font-weight:700;color:var(--white)}
+.ae-info .ae-drug{
+  font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--amber);margin-top:2px;
+}
+.ae-symptoms{
+  background:rgba(248,113,113,0.06);border:1px solid rgba(248,113,113,0.2);
+  border-radius:var(--r2);padding:12px 14px;
+  font-size:14px;font-family:'Instrument Serif',serif;font-style:italic;
+  color:var(--white);line-height:1.7;margin-bottom:12px;
+}
+.ae-question{font-size:15px;font-weight:600;color:var(--white);margin-bottom:1rem;line-height:1.5}
+.ae-opts{display:flex;flex-direction:column;gap:8px}
+.ae-opt{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--r2);padding:11px 15px;
+  font-size:14px;color:var(--white);cursor:pointer;
+  font-family:'Syne',sans-serif;transition:all 0.15s;
+  text-align:left;line-height:1.4;
+}
+.ae-opt:hover:not(:disabled){border-color:rgba(248,113,113,0.4);background:rgba(248,113,113,0.04)}
+.ae-opt.correct{background:rgba(52,211,153,0.1);border-color:var(--green);color:#B0FFE0}
+.ae-opt.wrong{background:rgba(248,113,113,0.1);border-color:var(--red);color:#FFCCCC}
+.ae-opt:disabled{cursor:default}
+.ae-exp{
+  background:var(--bg3);border-radius:var(--r2);
+  padding:14px 16px;margin-top:1rem;
+  font-size:13.5px;line-height:1.75;color:var(--white);
+}
+.ae-exp.ok{border-left:3px solid var(--green)}
+.ae-exp.bad{border-left:3px solid var(--red)}
+.ae-exp strong{display:block;margin-bottom:4px}
+.ae-action{
+  margin-top:8px;
+  background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);
+  border-radius:var(--r2);padding:9px 13px;
+  font-size:12px;color:var(--amber);
+}
+.ae-action strong{font-size:11px;letter-spacing:0.08em;text-transform:uppercase}
+
+/* ── GAME 4: CONTRAINDICATIONS ── */
+.ci-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:1.5rem;margin-bottom:1rem;
+}
+.ci-case{
+  background:rgba(167,139,250,0.06);border:1px solid rgba(167,139,250,0.2);
+  border-radius:var(--r2);padding:14px 16px;margin-bottom:1rem;
+}
+.ci-case-label{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  color:var(--purple);letter-spacing:0.15em;text-transform:uppercase;
+  display:block;margin-bottom:6px;
+}
+.ci-case-text{font-size:14px;color:var(--white);line-height:1.7}
+.ci-drugs{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.ci-drug{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--r2);padding:12px 10px;
+  cursor:pointer;text-align:center;transition:all 0.15s;
+}
+.ci-drug:hover:not(:disabled){border-color:var(--border2);transform:translateY(-1px)}
+.ci-drug .cd-abbr{font-size:16px;font-weight:800;display:block;margin-bottom:3px}
+.ci-drug .cd-name{font-size:10px;color:var(--muted);display:block;line-height:1.3}
+.ci-drug.correct{background:rgba(52,211,153,0.1);border-color:var(--green)}
+.ci-drug.wrong{background:rgba(248,113,113,0.08);border-color:var(--red)}
+.ci-drug.danger{background:rgba(248,113,113,0.1);border-color:var(--red)}
+.ci-drug:disabled{cursor:default}
+
+/* ── BUTTONS ── */
+.btn{
+  background:var(--card2);border:1px solid var(--border);
+  border-radius:var(--r2);padding:10px 20px;
+  font-size:13px;font-family:'Syne',sans-serif;font-weight:600;
+  color:var(--white);cursor:pointer;transition:all 0.15s;
+  display:inline-flex;align-items:center;gap:6px;
+}
+.btn:hover{background:var(--card);border-color:var(--border2)}
+.btn:active{transform:scale(0.98)}
+.btn.primary{background:var(--cyan2);border-color:var(--cyan2);color:#001824}
+.btn.primary:hover{background:var(--cyan);border-color:var(--cyan)}
+.btn.success{background:var(--green2);border-color:var(--green2);color:#001810}
+.btn.success:hover{background:var(--green);border-color:var(--green)}
+.btn-row{display:flex;gap:8px;margin-top:1rem;flex-wrap:wrap}
+
+/* ── FINISH ── */
+.finish-hero{text-align:center;padding:3rem 1rem}
+.finish-icon{font-size:60px;display:block;margin-bottom:1rem}
+.finish-title{font-size:28px;font-weight:800;color:var(--white);letter-spacing:-0.03em;margin-bottom:0.5rem}
+.finish-sub{font-size:15px;color:var(--muted);margin-bottom:2rem}
+.finish-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:400px;margin:0 auto 2rem}
+.finish-stat{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r2);padding:1rem;text-align:center;
+}
+.finish-stat .fn{
+  font-family:'JetBrains Mono',monospace;
+  font-size:26px;font-weight:700;color:var(--cyan);display:block;
+}
+.finish-stat .fl{font-size:12px;color:var(--muted);margin-top:3px}
+
+/* ── POINTS POP ── */
+.pts-pop{
+  position:fixed;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  background:var(--cyan2);color:#001824;
+  padding:10px 28px;border-radius:40px;
+  font-size:18px;font-weight:800;
+  font-family:'JetBrains Mono',monospace;
+  pointer-events:none;z-index:9999;
+  transition:all 0.5s;
+}
+
+/* ── TIMER ── */
+.timer-wrap{display:flex;align-items:center;gap:8px;margin-bottom:1rem}
+.timer-track{flex:1;height:4px;background:var(--bg3);border-radius:2px}
+.timer-fill{height:100%;background:var(--cyan);border-radius:2px;transition:width 0.1s linear}
+.timer-fill.warn{background:var(--red)}
+.timer-n{
+  font-family:'JetBrains Mono',monospace;font-size:13px;
+  font-weight:700;color:var(--cyan);width:28px;text-align:right;
+}
+.timer-n.warn{color:var(--red)}
+
+@media(max-width:520px){
+  .game-grid{grid-template-columns:1fr}
+  .prog-grid{grid-template-columns:1fr 1fr}
+  .finish-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-logo">Neuro<span>Match</span></div>
+  <div class="topbar-score">
+    <div class="score-chip pts">⭐ <span id="hdr-pts">0</span></div>
+    <div class="score-chip streak">🔥 <span id="hdr-str">0</span></div>
+  </div>
+</div>
+
+<div id="app">
+
+<!-- ══════ HOME ══════ -->
+<div id="scr-home" class="screen active">
+  <div class="home-hero">
+    <div class="home-eyebrow">Universidad Politécnica Salesiana · Psicofarmacología</div>
+    <div class="home-title">
+      <div class="t1">Neuro</div>
+      <div class="t2">Match</div>
+    </div>
+    <div class="home-sub">Aprende psicofarmacología jugando</div>
+  </div>
+  <div class="game-grid">
+    <button class="game-card" onclick="startGame('profiler')">
+      <div class="gc-num">01</div>
+      <div class="gc-icon">🧑‍⚕️</div>
+      <div class="gc-title">Perfila al Paciente</div>
+      <div class="gc-desc">Entrevista paso a paso y descubre qué antidepresivo necesita — el juego genera la respuesta solo</div>
+      <span class="gc-tag tag-cyan">PERFILAMIENTO CLÍNICO</span>
+    </button>
+    <button class="game-card" onclick="startGame('drill')">
+      <div class="gc-num">02</div>
+      <div class="gc-icon">⚙️</div>
+      <div class="gc-title">Mecanismos de Acción</div>
+      <div class="gc-desc">Repetición espaciada para memorizar NT, mecanismos y fármacos por familia — con barra de dominio</div>
+      <span class="gc-tag tag-green">REPETICIÓN · DOMINIO</span>
+    </button>
+    <button class="game-card" onclick="startGame('adverse')">
+      <div class="gc-num">03</div>
+      <div class="gc-icon">⚠️</div>
+      <div class="gc-title">Efectos Adversos</div>
+      <div class="gc-desc">Casos clínicos con síntomas inesperados — identifica el efecto adverso, el fármaco culpable y la acción</div>
+      <span class="gc-tag tag-amber">SÍNDROME SEROTONINÉRGICO · RAM</span>
+    </button>
+    <button class="game-card" onclick="startGame('contra')">
+      <div class="gc-num">04</div>
+      <div class="gc-icon">🚫</div>
+      <div class="gc-title">Contraindicaciones</div>
+      <div class="gc-desc">Pacientes con comorbilidades — elige el fármaco seguro o detecta el contraindicado antes de que sea tarde</div>
+      <span class="gc-tag tag-red">SEGURIDAD CLÍNICA</span>
+    </button>
+  </div>
+  <div class="prog-grid">
+    <div class="prog-stat"><span class="pn" id="st-p1">0/6</span><div class="pl">Perfilamiento</div></div>
+    <div class="prog-stat"><span class="pn" id="st-p2">0%</span><div class="pl">Dominio mec.</div></div>
+    <div class="prog-stat"><span class="pn" id="st-p3">0/8</span><div class="pl">Eff. adversos</div></div>
+    <div class="prog-stat"><span class="pn" id="st-p4">0/7</span><div class="pl">Contrain.</div></div>
+  </div>
+</div>
+
+<!-- ══════ GAME 1: PROFILER ══════ -->
+<div id="scr-profiler" class="screen">
+  <button class="back-btn" onclick="goHome()">← Inicio</button>
+  <div class="sec-head">
+    <div class="sec-eyebrow">🧑‍⚕️ Juego 1</div>
+    <div class="sec-title">Perfila al Paciente</div>
+    <div class="sec-desc">Responde las preguntas de la entrevista clínica. El sistema va perfilando al paciente y al final revela qué antidepresivo corresponde y por qué.</div>
+  </div>
+  <div class="pbar"><div class="pbar-fill" id="p1-pbar" style="width:0%"></div></div>
+  <div id="p1-body"></div>
+</div>
+
+<!-- ══════ GAME 2: DRILL ══════ -->
+<div id="scr-drill" class="screen">
+  <button class="back-btn" onclick="goHome()">← Inicio</button>
+  <div class="sec-head">
+    <div class="sec-eyebrow">⚙️ Juego 2</div>
+    <div class="sec-title">Mecanismos de Acción</div>
+    <div class="sec-desc">Domina cada familia. Neurotransmisores, mecanismo, diferencias y fármacos en Ecuador. La barra de dominio sube con cada respuesta correcta.</div>
+  </div>
+  <div id="mastery-wrap"></div>
+  <div class="pbar"><div class="pbar-fill" id="p2-pbar" style="width:0%"></div></div>
+  <div id="p2-body"></div>
+</div>
+
+<!-- ══════ GAME 3: ADVERSE ══════ -->
+<div id="scr-adverse" class="screen">
+  <button class="back-btn" onclick="goHome()">← Inicio</button>
+  <div class="sec-head">
+    <div class="sec-eyebrow">⚠️ Juego 3</div>
+    <div class="sec-title">Efectos Adversos</div>
+    <div class="sec-desc">Pacientes con síntomas inesperados. Identifica qué efecto adverso ocurre, a qué fármaco corresponde y qué harías clínicamente.</div>
+  </div>
+  <div class="pbar"><div class="pbar-fill" id="p3-pbar" style="width:0%"></div></div>
+  <div id="p3-body"></div>
+</div>
+
+<!-- ══════ GAME 4: CONTRAINDICATIONS ══════ -->
+<div id="scr-contra" class="screen">
+  <button class="back-btn" onclick="goHome()">← Inicio</button>
+  <div class="sec-head">
+    <div class="sec-eyebrow">🚫 Juego 4</div>
+    <div class="sec-title">Contraindicaciones</div>
+    <div class="sec-desc">Pacientes con comorbilidades, riesgos o medicación previa. Elige el antidepresivo seguro o identifica el que está contraindicado.</div>
+  </div>
+  <div class="pbar"><div class="pbar-fill" id="p4-pbar" style="width:0%"></div></div>
+  <div id="p4-body"></div>
+</div>
+
+<!-- ══════ FINISH ══════ -->
+<div id="scr-finish" class="screen">
+  <div class="finish-hero">
+    <span class="finish-icon">🏆</span>
+    <div class="finish-title">¡Módulo completado!</div>
+    <div class="finish-sub" id="fin-msg"></div>
+    <div class="finish-grid">
+      <div class="finish-stat"><span class="fn" id="fin-pts">0</span><div class="fl">Puntos ganados</div></div>
+      <div class="finish-stat"><span class="fn" id="fin-acc">0%</span><div class="fl">Precisión</div></div>
+      <div class="finish-stat"><span class="fn" id="fin-str">0</span><div class="fl">Racha máx.</div></div>
+      <div class="finish-stat"><span class="fn" id="fin-tot">0</span><div class="fl">Total acum.</div></div>
+    </div>
+    <div class="btn-row" style="justify-content:center">
+      <button class="btn primary" onclick="goHome()">Volver al inicio</button>
+      <button class="btn" onclick="repeatGame()">Repetir módulo</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+/* ════════════════════════════════════════════════
+   STATE
+════════════════════════════════════════════════ */
+const S = {
+  pts:0, streak:0, maxStreak:0,
+  p1done:0, p2mastery:{}, p3done:0, p4done:0,
+  modPts:0, modCorrect:0, modTotal:0,
+  curGame:null, curIdx:0, timerInt:null,
+};
+
+/* ════════════════════════════════════════════════
+   DATA — GAME 1: PATIENT PROFILES
+   Each case has sequential questions that "build" the profile
+   and auto-determine the drug at the end.
+════════════════════════════════════════════════ */
+const PATIENTS = [
+  {
+    avatar:'👩', name:'Valentina, 34 años', city:'Guayaquil',
+    complaint:'"Desde hace dos meses no puedo dormir, lloro sola, no tengo ganas de nada. El médico dice que estoy deprimida pero yo no quiero volverme adicta a pastillas."',
+    questions:[
+      { step:'Síntomas principales', q:'¿Cuál es el síntoma más prominente en Valentina?',
+        opts:['Tristeza persistente + insomnio + pérdida de energía','Grandiosidad + no duerme + gasta dinero impulsivamente','Miedo intenso + palpitaciones + evitación','Atracones + purgas + distorsión corporal'],
+        ans:0, profile_key:'Perfil sintomático', profile_val:'Depresión mayor moderada' },
+      { step:'Antecedentes', q:'Valentina niega episodios donde haya tenido "mucha energía, no necesitaba dormir y se sentía invencible". ¿Qué descarta esto?',
+        opts:['Trastorno de ansiedad generalizada','Trastorno Bipolar — no hay historia maníaca','Trastorno obsesivo-compulsivo','Esquizofrenia'],
+        ans:1, profile_key:'Bipolaridad descartada', profile_val:'✓ No — unipolar confirmado' },
+      { step:'Comorbilidades', q:'Sin diagnóstico de dolor crónico, fibromialgia ni neuropatía. ¿Cuál característica farmacológica NO es prioritaria en su caso?',
+        opts:['Acción serotoninérgica potente','Efecto ansiolítico','Acción analgésica específica sobre dolor crónico','Buen perfil de tolerabilidad GI'],
+        ans:2, profile_key:'Analgesia necesaria', profile_val:'No — sin dolor crónico' },
+      { step:'Síntoma de alarma', q:'Valentina también menciona dificultad para conciliar el sueño. Según la Tabla 7.1 de Stahl, el insomnio orienta hacia:',
+        opts:['Fármaco con agonismo dopaminérgico','Fármaco con acción antagonista 5-HT2 (sedante)','Fármaco con inhibición MAO-A','Fármaco con acción NA exclusiva'],
+        ans:1, profile_key:'Insomnio presente', profile_val:'→ Considerar antagonista 5-HT2' },
+    ],
+    result:{
+      drug:'Sertralina (ISRS)',
+      class:'ISRS — Inhibidor Selectivo de Recaptación de Serotonina',
+      why:'Depresión mayor moderada sin antecedentes bipolares, sin comorbilidades médicas activas. Los ISRS son primera línea (Cipriani et al., 2018, The Lancet). El insomnio puede manejarse con higiene del sueño en primera instancia.',
+      ecuador:'Altruline® · Zoloft® · Sertralina genérica (MSP)',
+      stahl:'Tabla 7.1: perfil serotoninérgico puro → ISRS. Sin comorbilidades que requieran doble mecanismo.',
+      nt:'🔵 5-HT ↑',
+    }
+  },
+  {
+    avatar:'👨', name:'Rodrigo, 28 años', city:'Quito',
+    complaint:'"Llevo tres semanas sin querer levantarme. No siento nada. No tengo ganas de trabajar ni de ver a nadie. Hace seis meses estaba al revés — dormía 3 horas y tenía mil proyectos."',
+    questions:[
+      { step:'Episodio actual', q:'Rodrigo describe ánimo bajo, hipersomnia e incapacidad para trabajar. ¿Con qué diagnóstico es más compatible el episodio actual?',
+        opts:['Episodio maníaco','Episodio depresivo mayor','Trastorno de pánico','TDAH adulto'],
+        ans:1, profile_key:'Episodio actual', profile_val:'Depresivo mayor' },
+      { step:'Historia previa', q:'"Hace 6 meses dormía 3 horas, tenía mil proyectos y gasté todos mis ahorros." ¿Qué sugiere este episodio previo?',
+        opts:['Fase maníaca de Trastorno Bipolar I','Reacción a un ISRS previo','Síndrome de discontinuación','Trastorno de personalidad antisocial'],
+        ans:0, profile_key:'Antecedente maníaco', profile_val:'⚠️ Trastorno Bipolar I' },
+      { step:'Decisión crítica', q:'Dado el diagnóstico de Trastorno Bipolar I, ¿qué está CONTRAINDICADO como intervención única?',
+        opts:['Litio como estabilizador','Antidepresivo solo sin eutimizante','Lamotrigina como coadyuvante','Psicoterapia cognitivo-conductual'],
+        ans:1, profile_key:'Contraindicación', profile_val:'⛔ ADP/ISRS solo = riesgo viraje' },
+      { step:'Primera línea', q:'En un paciente bipolar I en fase depresiva, ¿cuál es la intervención farmacológica correcta PRIMERO?',
+        opts:['ISRS puro — fluoxetina 20mg','Estabilizador del ánimo — litio o lamotrigina','NaSSA — mirtazapina de noche','IMAO — fenelzina'],
+        ans:1, profile_key:'Secuencia correcta', profile_val:'Eutimizante PRIMERO' },
+    ],
+    result:{
+      drug:'Carbonato de Litio + Lamotrigina',
+      class:'Eutimizante — Estabilizador del estado de ánimo',
+      why:'Trastorno Bipolar I con episodio depresivo actual. NUNCA antidepresivo solo: riesgo de viraje maníaco 20-40% (Angst et al., 2005). Litio tiene además evidencia antisuicida independiente (Cipriani et al., 2013, BMJ).',
+      ecuador:'Carbolit® (litio) · Lamictal® (lamotrigina) · Genérico litio disponible',
+      stahl:'Figura 7.1: litio como parte del arsenal de la depresión bipolar. Requiere litiemia 0.6–1.2 mEq/L.',
+      nt:'⚖️ Modula 5-HT · DA · NA · Glu',
+    }
+  },
+  {
+    avatar:'👩', name:'Carmen, 52 años', city:'Portoviejo',
+    complaint:'"Tengo depresión desde hace 3 meses y también dolor en todo el cuerpo que los médicos llaman fibromialgia. No duermo bien y estoy muy cansada."',
+    questions:[
+      { step:'Diagnóstico dual', q:'Carmen tiene dos diagnósticos activos: depresión mayor moderada + fibromialgia. ¿Qué característica farmacológica es prioritaria?',
+        opts:['Selectividad serotoninérgica pura','Acción dual sobre 5-HT y NA (vías descendentes del dolor)','Bloqueo H1 para sedación','Acción dopaminérgica para motivación'],
+        ans:1, profile_key:'Prioridad farmacológica', profile_val:'Doble acción 5-HT + NA (dolor)' },
+      { step:'Evidencia específica', q:'¿Qué familia tiene indicación aprobada para AMBOS: depresión mayor Y fibromialgia?',
+        opts:['ISRS (fluoxetina, sertralina)','IRSN (duloxetina, venlafaxina)','NaSSA (mirtazapina)','ISRD (bupropión)'],
+        ans:1, profile_key:'Familia indicada', profile_val:'IRSN — Duloxetina (Cymbalta®)' },
+      { step:'Neurotransmisor del dolor', q:'¿Por qué la noradrenalina (NA) es clave en el manejo del dolor crónico?',
+        opts:['Bloquea receptores H1 espinales','Actúa en vías descendentes inhibitorias del dolor en la médula','Aumenta la dopamina en el núcleo accumbens','Inhibe la MAO-B periférica'],
+        ans:1, profile_key:'Mecanismo analgésico', profile_val:'NA ↑ → vías inhibitorias del dolor' },
+      { step:'Fármaco específico', q:'Dentro de los IRSN, ¿cuál tiene la indicación más amplia en dolor neuropático diabético + fibromialgia + depresión?',
+        opts:['Venlafaxina (Effexor®)','Desvenlafaxina (Pristiq®)','Duloxetina (Cymbalta®)','Milnacipran'],
+        ans:2, profile_key:'IRSN de elección', profile_val:'Duloxetina — indicación triple' },
+    ],
+    result:{
+      drug:'Duloxetina (IRSN)',
+      class:'IRSN — Inhibidor de Recaptación de Serotonina y Noradrenalina',
+      why:'Indicación aprobada para depresión mayor + fibromialgia + neuropatía diabética dolorosa. La NA actúa en vías descendentes inhibitorias del dolor. Un ISRS solo no cubriría el componente analgésico.',
+      ecuador:'Cymbalta® · Duloxetina genérica (disponible en farmacias privadas Ecuador)',
+      stahl:'Tabla 7.2: candidata a doble mecanismo en depresión con dolor crónico. Tabla 7.3: columna de acción dual NA+5-HT.',
+      nt:'🔵 5-HT ↑ · 🟡 NA ↑',
+    }
+  },
+  {
+    avatar:'👨', name:'Andrés, 31 años', city:'Guayaquil',
+    complaint:'"Llevo 8 semanas con fluoxetina. El ánimo mejoró un poco pero sigo sin querer hacer nada, duermo demasiado y... esto es difícil de decir... tengo un problema sexual desde que tomé la pastilla."',
+    questions:[
+      { step:'Respuesta parcial', q:'Andrés tiene RESPUESTA PARCIAL a ISRS: ánimo mejora pero persiste anhedonia y apatía. ¿Qué neurotransmisor no está siendo cubierto?',
+        opts:['Serotonina — ya cubierta por el ISRS','Dopamina — anhedonia y apatía reflejan déficit DA','Histamina — causa sedación','GABA — regula la ansiedad'],
+        ans:1, profile_key:'NT no cubierto', profile_val:'Dopamina (DA) — anhedonia residual' },
+      { step:'Efecto adverso presente', q:'La disfunción sexual que describe Andrés es efecto adverso de los ISRS en hasta el 40% de pacientes. ¿Cuál es su causa farmacológica?',
+        opts:['Bloqueo de receptores H1','Exceso de 5-HT en receptores 5-HT2A y 5-HT3 que inhiben el reflejo sexual','Deficit de dopamina central','Bloqueo muscarínico'],
+        ans:1, profile_key:'Disfunción sexual', profile_val:'5-HT2A/3 → inhiben reflejo sexual' },
+      { step:'Próximo paso', q:'Se decide agregar un segundo fármaco que cubra DA y NA sin empeorar la disfunción sexual. ¿Cuál es?',
+        opts:['Otro ISRS — paroxetina','Bupropión (ISRD) — cubre DA+NA, sin 5-HT','Mirtazapina — agravaría el peso','ATC — agravaría la disfunción'],
+        ans:1, profile_key:'Estrategia', profile_val:'Agregar bupropión (ISRD)' },
+      { step:'Combinación segura', q:'¿Es seguro combinar fluoxetina (ISRS) con bupropión (ISRD)?',
+        opts:['No — riesgo de síndrome serotoninérgico alto','Sí — mecanismos complementarios sin riesgo serotoninérgico aditivo significativo','Solo si se suspende la fluoxetina primero','Requiere hospitalización obligatoria'],
+        ans:1, profile_key:'Combinación', profile_val:'✓ Segura — mecanismos distintos' },
+    ],
+    result:{
+      drug:'Agregar Bupropión (ISRD) a la fluoxetina',
+      class:'ISRD — Inhibidor de Recaptación de Noradrenalina y Dopamina',
+      why:'Respuesta parcial al ISRS con anhedonia residual (déficit dopaminérgico) y disfunción sexual (exceso 5-HT2A). El bupropión cubre DA+NA sin acción serotoninérgica — complementa el ISRS sin empeorar la disfunción sexual. Puede además reducir el peso.',
+      ecuador:'Wellbutrin® · Zyban® · Bupropión genérico disponible en Ecuador',
+      stahl:'Tabla 7.1: disfunción sexual → fármaco sin 5-HT (bupropión). Tabla 7.3: acción predominantemente NA.',
+      nt:'🟡 NA ↑ · 🟣 DA ↑ · Sin 5-HT',
+    }
+  },
+  {
+    avatar:'👴', name:'Luis, 67 años', city:'Cuenca',
+    complaint:'"Estoy triste desde que murió mi esposa. No como bien, bajé 6 kilos, no duermo, me aíslo. Tomo digoxina y warfarina por el corazón. No quiero pastillas fuertes."',
+    questions:[
+      { step:'Prioridades clínicas', q:'Luis tiene insomnio severo + pérdida de peso de 6kg. ¿Qué perfil farmacológico busca la Tabla 7.1 de Stahl para este cuadro?',
+        opts:['Activación DA/NA — para apatía','Antagonista 5-HT2 — sedación + efecto sobre apetito','Acción 5-HT pura — ISRS','Inhibición MAO-A — RIMA'],
+        ans:1, profile_key:'Stahl Tabla 7.1', profile_val:'Antagonista 5-HT2 → insomnio+apetito' },
+      { step:'Medicación cardíaca', q:'Luis toma digoxina y warfarina. Los antidepresivos TRICÍCLICOS están contraindicados porque:',
+        opts:['Bajan la digoxina sérica','Tienen interacciones cardiotóxicas (prolongan QTc) y potencian el efecto anticoagulante','Solo están contraindicados en menores','Causan hipoglucemia'],
+        ans:1, profile_key:'Contraindicación ATC', profile_val:'⛔ ATC — cardiotóxico en este caso' },
+      { step:'Fármaco ideal', q:'Considerando insomnio, pérdida de peso, poca interacción cardíaca y efecto rápido en sueño — ¿cuál es la opción?',
+        opts:['Fluoxetina (ISRS) — sin efecto sedante','Mirtazapina (NaSSA) — sedante, estimula apetito, inicio rápido','Venlafaxina (IRSN) — puede subir TA','Bupropión (ISRD) — no tiene efecto sedante ni sobre apetito'],
+        ans:1, profile_key:'NaSSA de elección', profile_val:'Mirtazapina — perfil ideal' },
+      { step:'Consideración práctica', q:'La mirtazapina se administra de noche porque:',
+        opts:['Es fotosensible','El bloqueo H1 produce sedación marcada — beneficio nocturno','Solo actúa en fase REM','Interacciona con la luz solar'],
+        ans:1, profile_key:'Posología', profile_val:'Tomar de noche — bloqueo H1 sedante' },
+    ],
+    result:{
+      drug:'Mirtazapina (NaSSA)',
+      class:'NaSSA — Antidepresivo Noradrenérgico y Serotoninérgico Específico',
+      why:'Bloquea alfa-2 presinápticos → ↑ NA y 5-HT. Bloquea H1 → sedación (ideal para insomnio). Estimula apetito (ideal para pérdida de 6kg). Sin interacciones cardíacas significativas con digoxina/warfarina. Inicio de efecto en sueño en la 1ª semana.',
+      ecuador:'Remeron® · Mirtazapina genérica disponible en Ecuador',
+      stahl:'Tabla 7.1: insomnio → antagonista 5-HT2. Tabla 7.3: acción dual (NA+5-HT).',
+      nt:'🔵 5-HT ↑ · 🟡 NA ↑ · 🟤 H1 bloqueado',
+    }
+  },
+  {
+    avatar:'👩', name:'Patricia, 38 años', city:'Quito',
+    complaint:'"Tengo mucho miedo de salir a lugares públicos, me da pánico hablar en público en el trabajo. Además últimamente estoy muy triste y sin energía."',
+    questions:[
+      { step:'Diagnóstico', q:'Patricia describe fobia social + episodio depresivo. ¿Qué familia tiene indicación aprobada para AMBOS diagnósticos?',
+        opts:['ISRD (bupropión) — sin indicación en fobia social','ISRS — indicados en depresión mayor, trastorno de pánico, fobia social, TOC','NaSSA (mirtazapina) — sin indicación específica en fobia social','IMAO irreversibles — demasiado riesgo'],
+        ans:1, profile_key:'Indicación dual', profile_val:'ISRS — depresión + fobia social' },
+      { step:'Alternativa RIMA', q:'Si Patricia prefiere evitar efectos sexuales del ISRS, ¿qué alternativa tiene indicación aprobada específicamente en fobia social?',
+        opts:['ATC (amitriptilina)','RIMA (moclobemida) — indicación específica en fobia social','NaSSA (mirtazapina)','ISRD (bupropión)'],
+        ans:1, profile_key:'Alternativa sin efecto sexual', profile_val:'RIMA (moclobemida) — Aurorix®' },
+      { step:'Mecanismo RIMA', q:'¿Cómo actúa la moclobemida (RIMA) que la hace más segura que los IMAO clásicos?',
+        opts:['Inhibe SERT y NET simultáneamente','Inhibe reversiblemente MAO-A — la tiramina puede desplazarla, sin crisis hipertensiva','Bloquea autorreceptores alfa-2','Bloquea receptores 5-HT2A y 5-HT3'],
+        ans:1, profile_key:'Mecanismo RIMA', profile_val:'Inhibición reversible MAO-A' },
+      { step:'Decisión final', q:'Patricia decide comenzar con el ISRS por ser más estudiado. ¿Cuál ISRS tiene mejor evidencia en fobia social?',
+        opts:['Fluoxetina — mejor en TOC','Sertralina o paroxetina — evidencia sólida en ansiedad social','Fluvoxamina — indicada en TOC','Escitalopram — preferido en ancianos'],
+        ans:1, profile_key:'ISRS de elección', profile_val:'Sertralina / Paroxetina (ansiedad social)' },
+    ],
+    result:{
+      drug:'Sertralina o Paroxetina (ISRS)',
+      class:'ISRS — Inhibidor Selectivo de Recaptación de Serotonina',
+      why:'Indicación aprobada para depresión mayor + fobia social + trastorno de pánico. La paroxetina tiene la aprobación más específica para ansiedad social. Alternativa: moclobemida (RIMA, Aurorix®) si se quieren evitar efectos sexuales.',
+      ecuador:'Altruline® / Zoloft® (sertralina) · Paxil® (paroxetina) · Aurorix® (moclobemida)',
+      stahl:'Tabla 7.1: perfil 5-HT para fobia social → ISRS. RIMA como alternativa válida sin dieta estricta.',
+      nt:'🔵 5-HT ↑',
+    }
+  },
+];
+
+/* ════════════════════════════════════════════════
+   DATA — GAME 2: MECHANISM DRILL
+════════════════════════════════════════════════ */
+const FAMILIES = {
+  ISRS:  { color:'#38BDF8', bg:'rgba(56,189,248,0.15)' },
+  IRSN:  { color:'#A78BFA', bg:'rgba(167,139,250,0.15)' },
+  ADP:   { color:'#60A5FA', bg:'rgba(96,165,250,0.15)' },
+  NaSSA: { color:'#34D399', bg:'rgba(52,211,153,0.15)' },
+  ISRD:  { color:'#F472B6', bg:'rgba(244,114,182,0.15)' },
+  IMAO:  { color:'#F87171', bg:'rgba(248,113,113,0.15)' },
+  RIMA:  { color:'#FBBF24', bg:'rgba(251,191,36,0.15)' },
+};
+const DRILL_QS = [
+  // ISRS
+  { fam:'ISRS', q:'¿Qué transportador bloquea selectivamente un ISRS?', opts:['NET — noradrenalina','SERT — serotonina','DAT — dopamina','MAO-A — degradación'], ans:1,
+    exp:'Los ISRS bloquean selectivamente el SERT (transportador de serotonina), aumentando 5-HT sináptica. No afectan NET ni DAT — de ahí su nombre "Selectivos".',
+    nt:'🔵 5-HT ↑', ec:'Fluoxetina (Fluoxac®, Prozac®) · Sertralina (Altruline®, Zoloft®) · Escitalopram (Lexapro®) · Paroxetina (Paxil®)' },
+  { fam:'ISRS', q:'¿Por qué los ISRS causan náuseas en las primeras 2 semanas?', opts:['Actúan en el hígado','El 90% de la serotonina corporal está en el tracto GI — el aumento brusco irrita el intestino','Reducen la dopamina','Bloquean H1 intestinal'], ans:1,
+    exp:'El 90% de la serotonina corporal está en el tracto gastrointestinal. El aumento brusco de 5-HT al iniciar un ISRS produce náuseas temporales (1-2 semanas) que desaparecen cuando el sistema GI se adapta.',
+    nt:'🔵 5-HT GI ↑ transitorio', ec:'Efecto adverso transitorio — advertir al paciente para mejorar adherencia' },
+  { fam:'ISRS', q:'¿Cuál ISRS tiene el mejor perfil de seguridad en embarazo?', opts:['Paroxetina — primera línea en embarazo','Sertralina — evidencia más sólida en embarazo','Fluoxetina — contraindicada','Fluvoxamina — de elección'], ans:1,
+    exp:'La sertralina tiene el mejor perfil de seguridad documentado en embarazo y es considerada de primera línea en ese contexto por la mayoría de guías internacionales.',
+    nt:'🔵 5-HT', ec:'Altruline® / Zoloft® (sertralina) — disponible en MSP Ecuador' },
+  // IRSN
+  { fam:'IRSN', q:'¿Qué dos transportadores bloquea la venlafaxina?', opts:['SERT + DAT (serotonina + dopamina)','SERT + NET (serotonina + noradrenalina)','NET + DAT (noradrenalina + dopamina)','MAO-A + MAO-B'], ans:1,
+    exp:'Los IRSN bloquean SERT (serotonina) + NET (noradrenalina). Esto da la doble acción 5-HT+NA que los distingue de los ISRS.',
+    nt:'🔵 5-HT ↑ · 🟡 NA ↑', ec:'Venlafaxina (Effexor®) · Duloxetina (Cymbalta®) · Desvenlafaxina (Pristiq®)' },
+  { fam:'IRSN', q:'A dosis BAJAS (<150mg), la venlafaxina actúa principalmente como:', opts:['IRSN completo — cubre 5-HT+NA por igual','ISRS — acción predominantemente serotoninérgica','NaSSA — acción noradrenérgica','ISRD — acción dopaminérgica'], ans:1,
+    exp:'A dosis bajas (<150mg/día), la venlafaxina actúa principalmente sobre SERT, comportándose como un ISRS. El efecto noradrenérgico (NET) se activa a dosis superiores a 150mg/día.',
+    nt:'<150mg: 🔵 5-HT puro · >150mg: 🔵+🟡', ec:'Effexor® 75mg → ampliar a 150mg para activar NA' },
+  { fam:'IRSN', q:'¿Cuál IRSN tiene indicación aprobada para fibromialgia + neuropatía diabética + depresión?', opts:['Venlafaxina (Effexor®)','Desvenlafaxina (Pristiq®)','Duloxetina (Cymbalta®)','Milnacipran'], ans:2,
+    exp:'La duloxetina tiene las indicaciones más amplias de los IRSN: depresión mayor, ansiedad generalizada, fibromialgia y neuropatía diabética dolorosa. La NA actúa en vías descendentes inhibitorias del dolor espinal.',
+    nt:'🔵 5-HT + 🟡 NA → analgesia', ec:'Cymbalta® · Duloxetina genérica disponible en Ecuador' },
+  // ADP
+  { fam:'ADP', q:'Los tricíclicos bloquean MÚLTIPLES receptores. ¿Qué produce el bloqueo de receptores muscarínicos (ACh)?', opts:['Sedación por H1','Efectos anticolinérgicos: boca seca, retención urinaria, visión borrosa, estreñimiento','Hipotensión ortostática por alfa-1','Crisis tiramínica'], ans:1,
+    exp:'El bloqueo muscarínico produce la tríada anticolinérgica: boca seca, retención urinaria, visión borrosa, estreñimiento y taquicardia. En adultos mayores puede producir delirium.',
+    nt:'⚠️ ACh bloqueado → anticolinérgico', ec:'Amitriptilina (Tryptanol®) · Clomipramina (Anafranil®) — genérico en MSP Ecuador' },
+  { fam:'ADP', q:'¿A qué dosis la amitriptilina tiene indicación ANALGÉSICA (no antidepresiva)?', opts:['75–150mg (dosis antidepresiva completa)','10–25mg — dosis analgésica baja','300mg — dosis máxima','Solo en forma IV'], ans:1,
+    exp:'La amitriptilina a dosis de 10-25mg tiene efecto analgésico sobre el dolor neuropático por su acción sobre 5-HT y NA en vías descendentes. La dosis antidepresiva es 75-150mg. Son umbrales diferentes para diferentes efectos.',
+    nt:'🔵 5-HT + 🟡 NA → dolor neuropático', ec:'Amitriptilina 10-25mg — en cuadro básico MSP Ecuador para dolor neuropático' },
+  // NaSSA
+  { fam:'NaSSA', q:'¿Por qué la mirtazapina NO bloquea la recaptación de serotonina directamente?', opts:['Porque inhibe la MAO','Porque bloquea autorreceptores alfa-2 presinápticos, que al bloquearse liberan más 5-HT y NA indirectamente','Porque es un antagonista 5-HT2A puro','Porque inhibe la COMT'], ans:1,
+    exp:'La mirtazapina no toca el SERT. Bloquea los autorreceptores alfa-2 presinápticos (que normalmente frenan la liberación de NA y 5-HT). Al bloquearlos, se libera más NA y 5-HT de forma indirecta.',
+    nt:'🔵 5-HT ↑ indirecto · 🟡 NA ↑ indirecto', ec:'Remeron® · Mirtazapina genérica disponible Ecuador' },
+  { fam:'NaSSA', q:'¿Qué efecto adverso es el más frecuente y significativo de la mirtazapina?', opts:['Disfunción sexual','Ganancia de peso (3-5kg) por bloqueo H1','Hipertensión arterial','Síndrome serotoninérgico'], ans:1,
+    exp:'El bloqueo de receptores H1 produce sedación + aumento del apetito → ganancia de peso de 3-5kg en los primeros 3 meses. Esto puede ser beneficioso en depresión con pérdida de peso, pero problemático en pacientes con sobrepeso.',
+    nt:'🟤 H1 bloqueado → sedación + ↑ peso', ec:'Beneficioso en pacientes con pérdida de peso por depresión. Controlar peso.' },
+  // ISRD
+  { fam:'ISRD', q:'El bupropión actúa sobre DA y NA. ¿Por qué NO produce disfunción sexual como los ISRS?', opts:['Porque es más antiguo','Porque no tiene acción serotoninérgica — la disfunción sexual de ISRS es mediada por 5-HT2A','Porque bloquea H1','Porque es un estimulante'], ans:1,
+    exp:'La disfunción sexual de los ISRS está mediada por el exceso de 5-HT en receptores 5-HT2A que inhiben el reflejo sexual. El bupropión no tiene acción serotoninérgica — por eso no produce este efecto adverso.',
+    nt:'🟡 NA ↑ · 🟣 DA ↑ · Sin 5-HT', ec:'Wellbutrin® · Zyban® (cesación tabáquica) · Bupropión genérico Ecuador' },
+  { fam:'ISRD', q:'¿En qué condición está ABSOLUTAMENTE contraindicado el bupropión?', opts:['Diabetes tipo 2','Epilepsia y bulimia nerviosa — reduce el umbral convulsivante','Hipotiroidismo','Hipertensión arterial controlada'], ans:1,
+    exp:'El bupropión reduce el umbral convulsivante. En epilepsia el riesgo es directo. En bulimia, los desequilibrios electrolíticos (hipopotasemia por purgas) bajan aún más el umbral. La combinación puede producir convulsiones.',
+    nt:'⛔ Epilepsia / bulimia — umbral convulsivo', ec:'Contraindicación absoluta — revisar siempre historia de convulsiones y TCA' },
+  // IMAO
+  { fam:'IMAO', q:'¿Qué enzima inhiben los IMAO y qué neurotransmisores degrada normalmente esa enzima?', opts:['Inhiben COMT — que degrada dopamina','Inhiben MAO-A y MAO-B — que degradan 5-HT, NA y DA','Inhiben SERT — que recapta 5-HT','Inhiben NET — que recapta NA'], ans:1,
+    exp:'La MAO (monoaminooxidasa) degrada las tres monoaminas principales: 5-HT, NA y DA. Al inhibirla, las tres acumulan en la sinapsis. Los IMAO irreversibles inhiben tanto MAO-A (5-HT, NA) como MAO-B (DA, feniletilamina).',
+    nt:'🔵 5-HT ↑ · 🟡 NA ↑ · 🟣 DA ↑', ec:'Uso muy restringido Ecuador — fenelzina, tranilcipromina (prescripción especializada)' },
+  { fam:'IMAO', q:'La crisis tiramínica es el principal riesgo de los IMAO. ¿Cómo ocurre?', opts:['La tiramina bloquea el SERT','La MAO intestinal inhibe la tiramina — sin ella, la tiramina entra al torrente sanguíneo, libera NA masivamente y produce crisis hipertensiva','La tiramina activa receptores H1','La tiramina inhibe el litio'], ans:1,
+    exp:'La MAO intestinal normalmente degrada la tiramina de los alimentos (quesos maduros, vino tinto, embutidos). Con IMAO activo, la tiramina pasa intacta al torrente sanguíneo, libera NA masivamente y puede producir crisis hipertensiva grave.',
+    nt:'⚠️ Tiramina + IMAO = NA masiva → crisis TA', ec:'Alimentos prohibidos: quesos maduros, vino tinto, salami, salsa de soya' },
+  // RIMA
+  { fam:'RIMA', q:'¿Qué hace a los RIMA más seguros que los IMAO clásicos en relación a la tiramina?', opts:['No inhiben ninguna MAO','Inhiben MAO-A reversiblemente — la tiramina puede desplazar el fármaco del sitio de unión y ser degradada normalmente','Bloquean los receptores de tiramina','Aumentan la excreción renal de tiramina'], ans:1,
+    exp:'La inhibición REVERSIBLE es la clave: la tiramina tiene mayor afinidad por la MAO que la moclobemida y puede desplazarla del sitio de unión, permitiendo la degradación normal. Esto elimina el riesgo de crisis tiramínica.',
+    nt:'🔵 5-HT ↑ · 🟡 NA ↑ (MAO-A reversible)', ec:'Aurorix® (moclobemida) — disponible Ecuador, indicado en fobia social' },
+];
+
+/* ════════════════════════════════════════════════
+   DATA — GAME 3: ADVERSE EFFECTS
+════════════════════════════════════════════════ */
+const ADVERSE = [
+  {
+    avatar:'👩', name:'Sofía, 26 años', drug:'Fluoxetina 40mg + Tramadol (por dolor)',
+    symptoms:'"Ingresó a urgencias con temblor, rigidez muscular, confusión, sudoración profusa, fiebre y movimientos espasmódicos. Comenzó hace 2 horas."',
+    q:'¿Cuál es el diagnóstico más probable?',
+    opts:['Reacción alérgica al tramadol','Síndrome serotoninérgico — exceso de 5-HT por combinación ISRS + tramadol (que tiene acción serotoninérgica)','Síndrome de discontinuación del ISRS','Crisis epiléptica idiopática'],
+    ans:1,
+    exp:'El síndrome serotoninérgico se produce por exceso de serotonina en el SNC. La triada clásica: alteración mental (confusión, agitación) + inestabilidad autonómica (fiebre, sudoración, taquicardia) + anormalidades neuromusculares (mioclonías, rigidez, temblor). El tramadol tiene acción serotoninérgica — combinarlo con ISRS puede desencadenar el síndrome.',
+    action:'⛔ SUSPENDER AMBOS FÁRMACOS inmediatamente. Hospitalización. Benzodiazepinas para agitación. Ciproheptadina (antagonista 5-HT) en casos graves. Soporte vital.',
+    name_ae:'Síndrome Serotoninérgico',
+  },
+  {
+    avatar:'👨', name:'Marco, 58 años', drug:'Amitriptilina 75mg (ATC)',
+    symptoms:'"Refiere boca seca extrema, dificultad para orinar hace 3 días, visión borrosa y estreñimiento severo. Toma amitriptilina desde hace 3 semanas."',
+    q:'¿Qué tipo de efecto adverso explica todos estos síntomas?',
+    opts:['Síndrome serotoninérgico','Efectos anticolinérgicos — bloqueo de receptores muscarínicos','Efectos noradrenérgicos — hipertensión','Síndrome de discontinuación'],
+    ans:1,
+    exp:'Los tricíclicos bloquean los receptores muscarínicos (colinérgicos). Esto produce la tríada anticolinérgica clásica: boca seca (glándulas salivales), retención urinaria (músculo detrusor), visión borrosa (músculo ciliar), estreñimiento (motilidad GI reducida). En adultos mayores puede producir delirium.',
+    action:'Evaluar dosis. Si efectos intolerables, cambiar a un ADP con menor perfil anticolinérgico (nortriptilina) o cambiar a ISRS. La retención urinaria severa requiere evaluación urológica.',
+    name_ae:'Efectos Anticolinérgicos (ATC)',
+  },
+  {
+    avatar:'👩', name:'Andrea, 34 años', drug:'Sertralina 50mg (suspendió hace 3 días sin avisar)',
+    symptoms:'"Se siente como que tiene gripe pero sin fiebre: mareos, sensaciones eléctricas en la cabeza tipo "zaps", irritabilidad extrema, náuseas, ansiedad intensa."',
+    q:'¿Cuál es el diagnóstico?',
+    opts:['Recaída de depresión mayor','Síndrome de discontinuación de ISRS — apareció tras suspensión abrupta','Inicio de trastorno de pánico','Intoxicación serotoninérgica'],
+    ans:1,
+    exp:'El síndrome de discontinuación de ISRS ocurre al suspender abruptamente. Se caracteriza por: mareos, "brain zaps" (sensaciones eléctricas en la cabeza), irritabilidad, náuseas, ansiedad, síntomas gripales. Acrónimo FINISH: Flu-like, Insomnia, Nausea, Imbalance, Sensory disturbances, Hyperarousal.',
+    action:'Reintroducir el ISRS y hacer reducción gradual (tapering). La fluoxetina tiene menor riesgo por su vida media larga. La paroxetina tiene el mayor riesgo por vida media corta.',
+    name_ae:'Síndrome de Discontinuación (ISRS)',
+  },
+  {
+    avatar:'👴', name:'Roberto, 72 años', drug:'Venlafaxina 150mg (IRSN)',
+    symptoms:'"En los últimos controles se detecta hipertensión arterial nueva (160/100) que no tenía antes de iniciar el fármaco hace 6 semanas."',
+    q:'¿Cuál es la causa más probable?',
+    opts:['Efecto placebo del fármaco','El componente noradrenérgico (NA↑) de los IRSN puede elevar la presión arterial','Síndrome metabólico por la mirtazapina','El bloqueo H1 produce hipertensión'],
+    ans:1,
+    exp:'La noradrenalina actúa en los vasos sanguíneos produciendo vasoconstricción y aumento de la presión arterial. El componente noradrenérgico de los IRSN (especialmente a dosis altas de venlafaxina) puede elevar la TA en pacientes susceptibles. El monitoreo de PA es obligatorio en pacientes con IRSN.',
+    action:'Monitorear PA regularmente. Si la HTA persiste: reducir dosis, cambiar a duloxetina (menor efecto vasoconstrictor) o añadir tratamiento antihipertensivo. Considerar cambio a ISRS.',
+    name_ae:'Hipertensión inducida por IRSN (NA↑)',
+  },
+  {
+    avatar:'👩', name:'Lucía, 29 años', drug:'Sertralina 50mg hace 6 semanas',
+    symptoms:'"Desde que tomó el antidepresivo no puede llegar al orgasmo. Su pareja cree que ya no la quiere. No le había dicho al médico por vergüenza."',
+    q:'¿Cuál es la base farmacológica de la disfunción sexual por ISRS?',
+    opts:['Bloqueo de receptores H1 que reduce la libido','Exceso de 5-HT en receptores 5-HT2A y 5-HT3 que inhiben el reflejo sexual','Déficit de dopamina por el ISRS','Bloqueo muscarínico'],
+    ans:1,
+    exp:'La disfunción sexual (principalmente dificultad para el orgasmo) ocurre en el 30-40% de pacientes con ISRS. La causa es el exceso de 5-HT en receptores 5-HT2A y 5-HT3 que inhiben la respuesta sexual. No es culpa del paciente ni de su relación — es un efecto farmacológico completamente esperado.',
+    action:'Opciones: reducir dosis, cambiar a bupropión (sin 5-HT), agregar bupropión, o usar mirtazapina (antagonista 5-HT2A). Siempre informar al paciente antes de iniciar el tratamiento.',
+    name_ae:'Disfunción Sexual por ISRS (5-HT2A)',
+  },
+  {
+    avatar:'👨', name:'Pedro, 44 años', drug:'Mirtazapina 30mg hace 2 meses',
+    symptoms:'"Ha subido 5 kilos en dos meses. En el día siente somnolencia intensa y tiene dificultad para trabajar. Toma el medicamento por las mañanas."',
+    q:'¿Cuál es la causa de la somnolencia diurna y la ganancia de peso?',
+    opts:['Exceso de serotonina serotoninérgica','Bloqueo de receptores H1 (histamina) — sedación + aumento del apetito','Inhibición de MAO-A','Bloqueo de receptores muscarínicos'],
+    ans:1,
+    exp:'La mirtazapina bloquea receptores H1 (histamina) → sedación marcada + aumento del apetito y del peso. El bloqueo H1 es la causa principal de la somnolencia diurna cuando se toma de mañana. La ganancia de peso por bloqueo H1 puede ser de 3-5kg en los primeros 3 meses.',
+    action:'TOMAR DE NOCHE — la sedación es el beneficio terapéutico nocturno. Si el peso es problemático, evaluar cambio o reducción de dosis. La somnolencia diurna es una señal de que se está tomando a la hora incorrecta.',
+    name_ae:'Sedación y Ganancia de Peso (NaSSA, H1↓)',
+  },
+  {
+    avatar:'👩', name:'Isabel, 67 años', drug:'Inició paroxetina (ISRS) hace 1 semana',
+    symptoms:'"Desde el primer día tiene náuseas, ha perdido el apetito y dice que el medicamento la hace sentir peor. Quiere suspenderlo."',
+    q:'¿Qué le explicas a Isabel sobre estas náuseas?',
+    opts:['El fármaco le está cayendo mal — suspender inmediatamente','Son transitorias (1-2 semanas) porque el 90% de la 5-HT está en el GI. El intestino se adapta — no son señal de que el fármaco no sirva','Indican síndrome serotoninérgico — urgencia','Son por el bloqueo H1 de la paroxetina'],
+    ans:1,
+    exp:'Las náuseas iniciales de los ISRS son completamente esperadas y transitorias. El 90% de la serotonina corporal está en el tracto GI. Al iniciar el fármaco, el aumento brusco de 5-HT GI produce náuseas que desaparecen en 1-2 semanas cuando el intestino se adapta. Si el paciente suspende por esto, pierde el beneficio terapéutico antes de que aparezca.',
+    action:'Psicoeducación: "Estas náuseas son normales y pasarán en 1-2 semanas. Tomar con comida puede reducirlas. El medicamento empieza a hacer efecto en 2-4 semanas — no lo abandones en la primera semana." Seguimiento activo.',
+    name_ae:'Náuseas transitorias (ISRS, 5-HT GI)',
+  },
+  {
+    avatar:'👨', name:'Tomás, 35 años', drug:'Inició bupropión 150mg hace 3 días (tiene antecedente de TEC por accidente)',
+    symptoms:'"En la consulta de seguimiento relata que tuvo una convulsión de 30 segundos ayer. No tiene antecedentes epilépticos previos al TEC."',
+    q:'¿Cuál es la causa más probable y qué se debió haber evaluado antes de prescribir?',
+    opts:['Coincidencia — no tiene relación con el fármaco','El bupropión reduce el umbral convulsivante — el antecedente de TEC severo es una contraindicación relativa que debía evaluarse','El bupropión causa convulsiones solo en bulimia','Es una recaída del TEC previo'],
+    ans:1,
+    exp:'El bupropión reduce el umbral convulsivante. El antecedente de traumatismo craneoencefálico severo puede haber dejado focos epileptogénicos latentes que se activan con el umbral reducido. ANTES de prescribir bupropión, se debe investigar: historia de epilepsia, TEC severo, bulimia nerviosa, uso de alcohol/benzodiacepinas (síndrome de abstinencia).',
+    action:'Suspender bupropión. Evaluación neurológica urgente. Elegir antidepresivo alternativo que no baje el umbral convulsivo (ISRS o IRSN). Documentar la contraindicación en la historia clínica.',
+    name_ae:'Convulsión por Bupropión (umbral convulsivo ↓)',
+  },
+];
+
+/* ════════════════════════════════════════════════
+   DATA — GAME 4: CONTRAINDICATIONS
+════════════════════════════════════════════════ */
+const CONTRA = [
+  {
+    case_label:'Paciente con comorbilidades cardíacas',
+    case_text:'Hombre, 70 años, depresión moderada. Antecedentes: cardiopatía isquémica, toma digoxina y warfarina. ¿Cuál antidepresivo está CONTRAINDICADO por riesgo de arritmia y prolongación QTc?',
+    q_type:'danger', // identify the dangerous one
+    q:'Selecciona el fármaco CONTRAINDICADO en este paciente:',
+    drugs:[
+      { abbr:'ATC', name:'Amitriptilina', color:'#F87171', verdict:'danger',   exp:'⛔ CONTRAINDICADO. Los ATC prolongan el intervalo QTc y tienen interacciones cardiotóxicas con digoxina. Riesgo de arritmia grave en cardiopatía preexistente.' },
+      { abbr:'ISRS', name:'Sertralina',   color:'#38BDF8', verdict:'safe',     exp:'✓ Seguro. Los ISRS tienen el mejor perfil cardíaco entre los antidepresivos. Sertralina es de elección en pacientes cardíacos (estudio SADHART).' },
+      { abbr:'NaSSA', name:'Mirtazapina', color:'#34D399', verdict:'safe',     exp:'✓ Aceptable. Mirtazapina no tiene interacciones cardíacas significativas. Útil si hay insomnio o pérdida de peso.' },
+      { abbr:'ISRD', name:'Bupropión',    color:'#F472B6', verdict:'caution',  exp:'⚠️ Precaución. Puede elevar levemente la TA. No contraindicado en cardiopatía estable, pero monitorizar.' },
+    ],
+    correct_idx:0,
+    stahl:'Tabla 7.1: ATC — contraindicado en cardiopatía. ISRS (sertralina) es de elección en depresión post-infarto.',
+  },
+  {
+    case_label:'Paciente con Trastorno Bipolar I',
+    case_text:'Mujer, 32 años, con diagnóstico confirmado de Trastorno Bipolar I en fase depresiva. No toma ningún eutimizante actualmente. ¿Cuál intervención NUNCA debe hacerse como primera línea?',
+    q_type:'danger',
+    q:'Selecciona la intervención CONTRAINDICADA sin cobertura eutimizante:',
+    drugs:[
+      { abbr:'Li', name:'Litio solo',         color:'#38BDF8', verdict:'safe',    exp:'✓ Correcto. El litio estabilizador es la primera intervención en bipolar — cubre ambos polos y tiene evidencia antisuicida.' },
+      { abbr:'ISRS', name:'ISRS solo sin Li',  color:'#F87171', verdict:'danger',  exp:'⛔ CONTRAINDICADO sin eutimizante. Riesgo de viraje maníaco 20-40% (Angst et al., 2005). Siempre eutimizante primero en bipolar.' },
+      { abbr:'Lamo', name:'Lamotrigina',       color:'#34D399', verdict:'safe',    exp:'✓ Indicado. La lamotrigina es eutimizante con eficacia específica en la fase depresiva del bipolar.' },
+      { abbr:'TCC', name:'Psicoterapia TCC',   color:'#A78BFA', verdict:'safe',    exp:'✓ Siempre indicada como complemento. La TCC combinada con farmacoterapia tiene los mejores resultados.' },
+    ],
+    correct_idx:1,
+    stahl:'Figura 7.1: litio es parte del arsenal. Angst: ISRS sin eutimizante = riesgo de viraje.',
+  },
+  {
+    case_label:'Paciente con Bulimia Nerviosa',
+    case_text:'Mujer, 22 años, con bulimia nerviosa activa (purgas 3-4 veces por semana) y depresión comórbida. ¿Qué antidepresivo está contraindicado por riesgo de convulsiones en este contexto?',
+    q_type:'danger',
+    q:'Selecciona el fármaco CONTRAINDICADO en bulimia nerviosa:',
+    drugs:[
+      { abbr:'ISRS', name:'Fluoxetina',    color:'#38BDF8', verdict:'safe',    exp:'✓ Primera línea. La fluoxetina es el único antidepresivo con indicación específica aprobada para bulimia nerviosa (60mg/día).' },
+      { abbr:'ISRD', name:'Bupropión',     color:'#F87171', verdict:'danger',  exp:'⛔ CONTRAINDICADO en bulimia. Las purgas producen hipopotasemia que reduce el umbral convulsivante. El bupropión lo reduce aún más — riesgo de convulsiones.' },
+      { abbr:'IRSN', name:'Venlafaxina',   color:'#A78BFA', verdict:'caution', exp:'⚠️ Puede usarse. Sin contraindicación específica en bulimia. Monitorear electrolitos.' },
+      { abbr:'NaSSA', name:'Mirtazapina',  color:'#FBBF24', verdict:'caution', exp:'⚠️ Precaución: estimula el apetito, lo que puede ser contraproducente en bulimia al aumentar el impulso alimentario.' },
+    ],
+    correct_idx:1,
+    stahl:'ISRS (fluoxetina 60mg) es la única indicación aprobada específica para bulimia. Bupropión contraindicado.',
+  },
+  {
+    case_label:'Riesgo de Síndrome Serotoninérgico',
+    case_text:'Paciente en tratamiento con fluoxetina 20mg. El médico quiere añadir tramadol para dolor musculoesquelético. Como psicólogo conocedor de farmacología, ¿qué adviertes?',
+    q_type:'danger',
+    q:'¿Cuál combinación representa el mayor riesgo de síndrome serotoninérgico?',
+    drugs:[
+      { abbr:'Ibup', name:'Fluox + Ibuprofeno',  color:'#34D399', verdict:'safe',    exp:'✓ Sin interacción serotoninérgica. Monitorear gastroprotección GI (AINEs + ISRS pueden aumentar riesgo de hemorragia GI, pero sin síndrome serotoninérgico).' },
+      { abbr:'Tram', name:'Fluox + Tramadol',    color:'#F87171', verdict:'danger',  exp:'⛔ RIESGO ALTO. El tramadol tiene propiedades serotoninérgicas propias (inhibe SERT). Combinado con ISRS puede producir síndrome serotoninérgico: confusión, fiebre, rigidez, mioclonías.' },
+      { abbr:'Para', name:'Fluox + Paracetamol', color:'#34D399', verdict:'safe',    exp:'✓ Sin interacción serotoninérgica. El paracetamol es analgésico seguro de combinar con ISRS.' },
+      { abbr:'Tizn', name:'Fluox + Tizanidina',  color:'#FBBF24', verdict:'caution', exp:'⚠️ Interacción farmacocinética posible (fluoxetina inhibe CYP1A2 que metaboliza tizanidina) pero no serotoninérgica.' },
+    ],
+    correct_idx:1,
+    stahl:'Síndrome serotoninérgico: combinación de dos fármacos serotoninérgicos. ISRS + tramadol = combinación de alto riesgo.',
+  },
+  {
+    case_label:'Embarazo — primer trimestre',
+    case_text:'Paciente embarazada de 8 semanas con depresión mayor moderada. ¿Cuál ISRS tiene el mejor perfil de seguridad documentado en embarazo?',
+    q_type:'safe', // identify the safe one
+    q:'¿Cuál ISRS es de primera línea en embarazo?',
+    drugs:[
+      { abbr:'Parox', name:'Paroxetina',     color:'#F87171', verdict:'danger',  exp:'⛔ Evitar en embarazo — asociada a malformaciones cardíacas congénitas en primer trimestre (PPHN). Cambiar antes de embarazo si es posible.' },
+      { abbr:'Sert',  name:'Sertralina',     color:'#34D399', verdict:'safe',    exp:'✓ Primera línea en embarazo. La sertralina tiene el perfil de seguridad más documentado en embarazo. Pasa en menor cantidad al feto. Monitorear al neonato.' },
+      { abbr:'Fluox', name:'Fluoxetina',     color:'#FBBF24', verdict:'caution', exp:'⚠️ Usable con monitoreo. Más datos de seguridad que otros ISRS pero vida media larga puede acumularse en neonato. Evaluar riesgo-beneficio.' },
+      { abbr:'Escit', name:'Escitalopram',   color:'#FBBF24', verdict:'caution', exp:'⚠️ Datos limitados. Puede usarse si la sertralina no es tolerada. Monitorear al neonato.' },
+    ],
+    correct_idx:1,
+    stahl:'Sertralina — primera línea en depresión perinatal. Evidencia de seguridad: estudio STEP-BD, guías NICE y APA.',
+  },
+  {
+    case_label:'Adulto mayor con múltiple medicación',
+    case_text:'Hombre, 78 años, toma warfarina (anticoagulante). Necesita antidepresivo. ¿Cuál ISRS requiere mayor precaución por inhibición de CYP2C9 que eleva los niveles de warfarina (riesgo de hemorragia)?',
+    q_type:'danger',
+    q:'¿Qué ISRS interacciona más significativamente con warfarina a través de CYP2C9?',
+    drugs:[
+      { abbr:'Sert', name:'Sertralina',   color:'#34D399', verdict:'safe',    exp:'✓ Menor interacción. Sertralina tiene el mejor perfil de interacciones medicamentosas de los ISRS. Monitorear INR de todas formas.' },
+      { abbr:'Fluv', name:'Fluvoxamina',  color:'#F87171', verdict:'danger',  exp:'⛔ Mayor riesgo. Fluvoxamina es el ISRS con más interacciones CYP (1A2, 2C9, 3A4). Puede elevar significativamente el efecto de warfarina — riesgo hemorrágico.' },
+      { abbr:'Escit', name:'Escitalopram',color:'#34D399', verdict:'safe',    exp:'✓ Mejor perfil de interacciones. Escitalopram tiene el menor potencial inhibidor CYP de todos los ISRS. Buena opción en polifarmacia.' },
+      { abbr:'Parox', name:'Paroxetina',  color:'#FBBF24', verdict:'caution', exp:'⚠️ Interacción moderada. Paroxetina inhibe CYP2D6 con múltiples interacciones. Usar con monitoreo de INR.' },
+    ],
+    correct_idx:1,
+    stahl:'Interacciones CYP: escitalopram menor riesgo. Fluvoxamina mayor riesgo en polifarmacia.',
+  },
+  {
+    case_label:'Paciente con Epilepsia',
+    case_text:'Mujer, 45 años, con depresión mayor comórbida a epilepsia controlada con valproato. ¿Cuál antidepresivo está CONTRAINDICADO?',
+    q_type:'danger',
+    q:'¿Cuál NO debe usarse en epilepsia?',
+    drugs:[
+      { abbr:'ISRS', name:'Sertralina',   color:'#34D399', verdict:'safe',    exp:'✓ Seguro en epilepsia. Los ISRS no reducen el umbral convulsivante y son de elección en pacientes epilépticos con depresión.' },
+      { abbr:'ISRD', name:'Bupropión',    color:'#F87171', verdict:'danger',  exp:'⛔ CONTRAINDICADO en epilepsia. Reduce el umbral convulsivante de forma significativa. Uso en epilepsia = riesgo de convulsiones potencialmente graves.' },
+      { abbr:'IRSN', name:'Venlafaxina',  color:'#38BDF8', verdict:'safe',    exp:'✓ Usable con monitoreo. Sin contraindicación específica en epilepsia. Vigilar niveles de valproato (posible interacción).' },
+      { abbr:'NaSSA', name:'Mirtazapina', color:'#34D399', verdict:'safe',    exp:'✓ Seguro. La mirtazapina no reduce el umbral convulsivo y puede usarse en pacientes epilépticos.' },
+    ],
+    correct_idx:1,
+    stahl:'Bupropión — contraindicación absoluta en epilepsia. ISRS es de elección en depresión + epilepsia.',
+  },
+];
+
+/* ════════════════════════════════════════════════
+   NAVIGATION
+════════════════════════════════════════════════ */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function goHome(){ if(S.timerInt){clearInterval(S.timerInt);S.timerInt=null;} updateHome(); showScreen('scr-home'); }
+function addPts(n){
+  S.pts+=n; S.modPts+=n;
+  document.getElementById('hdr-pts').textContent=S.pts;
+  const pop=document.createElement('div');
+  pop.className='pts-pop'; pop.textContent='+'+n+' pts';
+  document.body.appendChild(pop);
+  setTimeout(()=>{pop.style.opacity='0';setTimeout(()=>pop.remove(),500)},900);
+}
+function updateHome(){
+  document.getElementById('hdr-pts').textContent=S.pts;
+  document.getElementById('hdr-str').textContent=S.streak;
+  document.getElementById('st-p1').textContent=Math.min(S.p1done,6)+'/6';
+  document.getElementById('st-p2').textContent=getMasteryAvg()+'%';
+  document.getElementById('st-p3').textContent=Math.min(S.p3done,8)+'/8';
+  document.getElementById('st-p4').textContent=Math.min(S.p4done,7)+'/7';
+}
+function getMasteryAvg(){
+  const fams=Object.keys(FAMILIES);
+  if(!fams.length)return 0;
+  const vals=fams.map(f=>S.p2mastery[f]||0);
+  return Math.round(vals.reduce((a,b)=>a+b,0)/fams.length);
+}
+function repeatGame(){ startGame(S.curGame); }
+
+/* ════════════════════════════════════════════════
+   GAME 1: PATIENT PROFILER
+════════════════════════════════════════════════ */
+let p1Profile = {};
+let p1QIdx = 0;
+let p1PatIdx = 0;
+function startGame(g){
+  S.curGame=g; S.modPts=0; S.modCorrect=0;
+  if(g==='profiler'){ p1PatIdx=0; p1QIdx=0; p1Profile={}; showScreen('scr-profiler'); renderP1(); }
+  if(g==='drill'){    S.curIdx=0; showScreen('scr-drill');   renderP2(); }
+  if(g==='adverse'){  S.curIdx=0; showScreen('scr-adverse'); renderP3(); }
+  if(g==='contra'){   S.curIdx=0; showScreen('scr-contra');  renderP4(); }
+}
+
+function renderP1(){
+  if(p1PatIdx>=PATIENTS.length){ finishGame('profiler'); return; }
+  const pat=PATIENTS[p1PatIdx];
+  const pct=((p1PatIdx*pat.questions.length+p1QIdx)/(PATIENTS.length*4))*100;
+  document.getElementById('p1-pbar').style.width=pct+'%';
+  if(p1QIdx===0) p1Profile={};
+  if(p1QIdx>=pat.questions.length){ renderP1Result(pat); return; }
+  const q=pat.questions[p1QIdx];
+  const profileHtml=Object.keys(p1Profile).length>0?`
+    <div class="profile-result" style="margin-bottom:1rem">
+      <div class="pr-label">Perfil construido hasta aquí</div>
+      ${Object.entries(p1Profile).map(([k,v])=>`
+        <div class="profile-item">
+          <div class="profile-dot" style="background:var(--cyan)"></div>
+          <div class="profile-key">${k}</div>
+          <div class="profile-val">${v}</div>
+        </div>`).join('')}
+    </div>`:'';
+  document.getElementById('p1-body').innerHTML=`
+    <div class="patient-card">
+      <div class="patient-avatar">${pat.avatar}</div>
+      <div class="patient-name">${pat.name}</div>
+      <div class="patient-meta">${pat.city} · Caso ${p1PatIdx+1} de ${PATIENTS.length}</div>
+      <div class="patient-complaint">${pat.complaint}</div>
+    </div>
+    ${profileHtml}
+    <div class="question-block">
+      <div class="q-step">Pregunta ${p1QIdx+1} de ${pat.questions.length} · ${q.step}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="q-opts">${q.opts.map((o,i)=>`<button class="q-opt" onclick="answerP1(${i})">${o}</button>`).join('')}</div>
+    </div>`;
+}
+
+function answerP1(idx){
+  const pat=PATIENTS[p1PatIdx];
+  const q=pat.questions[p1QIdx];
+  const correct=idx===q.ans;
+  const btns=document.querySelectorAll('.q-opt');
+  btns.forEach(b=>b.disabled=true);
+  btns[idx].classList.add('selected');
+  if(correct){
+    S.streak++; if(S.streak>S.maxStreak)S.maxStreak=S.streak;
+    addPts(15); S.modCorrect++;
+    p1Profile[q.profile_key]=q.profile_val;
+  } else {
+    S.streak=0;
+    p1Profile[q.profile_key]='❌ '+q.profile_val;
+  }
+  document.getElementById('hdr-str').textContent=S.streak;
+  const fb=document.createElement('div');
+  fb.className='drill-exp'+(correct?'':' wrong-exp');
+  fb.innerHTML=`<strong>${correct?'✓ Correcto':'✗ Respuesta correcta: '+q.opts[q.ans]}</strong>${correct?q.profile_key+' → '+q.profile_val:'La respuesta correcta es: '+q.profile_val}`;
+  document.querySelector('.question-block').appendChild(fb);
+  const nb=document.createElement('div');
+  nb.className='btn-row';
+  nb.innerHTML=`<button class="btn primary" onclick="nextP1Q()">Siguiente pregunta →</button>`;
+  document.querySelector('.question-block').appendChild(nb);
+}
+
+function nextP1Q(){ p1QIdx++; renderP1(); }
+
+function renderP1Result(pat){
+  S.p1done=Math.max(S.p1done,p1PatIdx+1);
+  document.getElementById('p1-body').innerHTML=`
+    <div class="patient-card">
+      <div class="patient-avatar">${pat.avatar}</div>
+      <div class="patient-name">${pat.name}</div>
+      <div class="patient-meta">${pat.city} · Perfil completado</div>
+      <div class="patient-complaint">${pat.complaint}</div>
+    </div>
+    <div class="profile-result" style="margin-bottom:1rem">
+      <div class="pr-label">Perfil clínico final</div>
+      ${Object.entries(p1Profile).map(([k,v])=>`
+        <div class="profile-item">
+          <div class="profile-dot" style="background:${v.startsWith('❌')?'var(--red)':'var(--green)'}"></div>
+          <div class="profile-key">${k}</div>
+          <div class="profile-val">${v}</div>
+        </div>`).join('')}
+    </div>
+    <div class="drug-reveal">
+      <div class="dr-title">💊 Antidepresivo indicado según perfil</div>
+      <div class="drug-name">${pat.result.drug}</div>
+      <div class="drug-class">${pat.result.class}</div>
+      <div class="drug-why">${pat.result.why}</div>
+      <div class="nt-pills"><span class="nt-pill tag-cyan">${pat.result.nt}</span></div>
+      <div class="drug-ecuador"><strong>🇪🇨 Ecuador</strong>${pat.result.ecuador}</div>
+      <div class="stahl-ref">📖 ${pat.result.stahl}</div>
+    </div>
+    <div class="btn-row">
+      <button class="btn primary" onclick="nextP1Patient()">Siguiente paciente →</button>
+      <button class="btn" onclick="goHome()">Volver al inicio</button>
+    </div>`;
+  addPts(20); updateHome();
+}
+
+function nextP1Patient(){ p1PatIdx++; p1QIdx=0; p1Profile={}; renderP1(); }
+
+/* ════════════════════════════════════════════════
+   GAME 2: MECHANISM DRILL
+════════════════════════════════════════════════ */
+let drillQueue=[];
+function buildDrillQueue(){
+  drillQueue=[...DRILL_QS].sort(()=>Math.random()-0.5);
+}
+function renderMastery(){
+  const html=Object.entries(FAMILIES).map(([f,c])=>{
+    const m=S.p2mastery[f]||0;
+    return `<div class="mastery-row">
+      <div class="mastery-label" style="color:${c.color}">${f}</div>
+      <div class="mastery-track"><div class="mastery-fill" style="width:${m}%;background:${c.color}"></div></div>
+      <div class="mastery-pct">${m}%</div>
+    </div>`;
+  }).join('');
+  document.getElementById('mastery-wrap').innerHTML=`<div class="mastery-bar">${html}</div>`;
+}
+function renderP2(){
+  if(S.curIdx===0) buildDrillQueue();
+  if(S.curIdx>=drillQueue.length){ finishGame('drill'); return; }
+  const q=drillQueue[S.curIdx];
+  const fc=FAMILIES[q.fam];
+  const pct=(S.curIdx/drillQueue.length)*100;
+  document.getElementById('p2-pbar').style.width=pct+'%';
+  renderMastery();
+  document.getElementById('p2-body').innerHTML=`
+    <div class="drill-card">
+      <div class="drill-family" style="background:${fc.bg};color:${fc.color};border:1px solid ${fc.color}40">${q.fam}</div>
+      <div class="drill-question">${q.q}</div>
+      <div class="drill-opts">${q.opts.map((o,i)=>`<button class="drill-opt" onclick="answerP2(${i})">${o}</button>`).join('')}</div>
+    </div>`;
+}
+
+function answerP2(idx){
+  const q=drillQueue[S.curIdx];
+  const btns=document.querySelectorAll('.drill-opt');
+  btns.forEach(b=>b.disabled=true);
+  const correct=idx===q.ans;
+  btns[idx].classList.add(correct?'correct':'wrong');
+  if(!correct) btns[q.ans].classList.add('correct');
+  if(correct){
+    S.streak++; if(S.streak>S.maxStreak)S.maxStreak=S.streak;
+    S.modCorrect++;
+    const pts=10+Math.min(S.streak*3,15);
+    addPts(pts);
+    S.p2mastery[q.fam]=Math.min((S.p2mastery[q.fam]||0)+14,100);
+  } else {
+    S.streak=0;
+    S.p2mastery[q.fam]=Math.max((S.p2mastery[q.fam]||0)-5,0);
+  }
+  document.getElementById('hdr-str').textContent=S.streak;
+  renderMastery();
+  const fc=FAMILIES[q.fam];
+  const exp=document.createElement('div');
+  exp.className='drill-exp'+(correct?'':' wrong-exp');
+  exp.innerHTML=`<strong>${correct?'✓ Correcto':'✗ Incorrecto'}</strong>${q.exp}
+    <div class="nt-pills"><span class="nt-pill" style="background:${fc.bg};border:1px solid ${fc.color}40;color:${fc.color}">${q.nt}</span></div>
+    <div style="margin-top:6px;font-size:12px;color:var(--muted)"><strong style="color:var(--green)">🇪🇨 Ecuador:</strong> ${q.ec}</div>`;
+  document.querySelector('.drill-card').appendChild(exp);
+  const nb=document.createElement('div');
+  nb.className='btn-row';
+  nb.innerHTML=`<button class="btn primary" onclick="nextP2()">Siguiente →</button>`;
+  document.querySelector('.drill-card').appendChild(nb);
+}
+function nextP2(){ S.curIdx++; renderP2(); }
+
+/* ════════════════════════════════════════════════
+   GAME 3: ADVERSE EFFECTS
+════════════════════════════════════════════════ */
+function renderP3(){
+  if(S.curIdx>=ADVERSE.length){ finishGame('adverse'); return; }
+  const ae=ADVERSE[S.curIdx];
+  const pct=(S.curIdx/ADVERSE.length)*100;
+  document.getElementById('p3-pbar').style.width=pct+'%';
+  document.getElementById('p3-body').innerHTML=`
+    <div class="ae-scenario">
+      <div class="ae-patient">
+        <div class="ae-avatar">${ae.avatar}</div>
+        <div class="ae-info">
+          <div class="ae-name">${ae.name}</div>
+          <div class="ae-drug">💊 ${ae.drug}</div>
+        </div>
+      </div>
+      <div class="ae-symptoms">"${ae.symptoms}"</div>
+      <div class="ae-question">${ae.q}</div>
+      <div class="ae-opts">${ae.opts.map((o,i)=>`<button class="ae-opt" onclick="answerP3(${i})">${o}</button>`).join('')}</div>
+    </div>`;
+}
+
+function answerP3(idx){
+  const ae=ADVERSE[S.curIdx];
+  const btns=document.querySelectorAll('.ae-opt');
+  btns.forEach(b=>b.disabled=true);
+  const correct=idx===ae.ans;
+  btns[idx].classList.add(correct?'correct':'wrong');
+  if(!correct) btns[ae.ans].classList.add('correct');
+  if(correct){ S.streak++; if(S.streak>S.maxStreak)S.maxStreak=S.streak; addPts(15); S.modCorrect++; }
+  else { S.streak=0; }
+  document.getElementById('hdr-str').textContent=S.streak;
+  S.p3done=Math.max(S.p3done,S.curIdx+1);
+  const fb=document.createElement('div');
+  fb.className='ae-exp '+(correct?'ok':'bad');
+  fb.innerHTML=`<strong>${correct?'✓ Correcto — '+ae.name_ae:'✗ '+ae.name_ae}</strong>${ae.exp}
+    <div class="ae-action"><strong>Acción clínica: </strong>${ae.action}</div>`;
+  document.querySelector('.ae-scenario').appendChild(fb);
+  const nb=document.createElement('div');
+  nb.className='btn-row';
+  nb.innerHTML=`<button class="btn primary" onclick="nextP3()">Siguiente caso →</button>`;
+  document.querySelector('.ae-scenario').appendChild(nb);
+}
+function nextP3(){ S.curIdx++; renderP3(); }
+
+/* ════════════════════════════════════════════════
+   GAME 4: CONTRAINDICATIONS
+════════════════════════════════════════════════ */
+function renderP4(){
+  if(S.curIdx>=CONTRA.length){ finishGame('contra'); return; }
+  const ci=CONTRA[S.curIdx];
+  const pct=(S.curIdx/CONTRA.length)*100;
+  document.getElementById('p4-pbar').style.width=pct+'%';
+  const drugsHtml=ci.drugs.map((d,i)=>`
+    <button class="ci-drug" id="cidrug-${i}" onclick="answerP4(${i})">
+      <span class="cd-abbr" style="color:${d.color}">${d.abbr}</span>
+      <span class="cd-name">${d.name}</span>
+    </button>`).join('');
+  document.getElementById('p4-body').innerHTML=`
+    <div class="ci-card">
+      <div class="ci-case">
+        <span class="ci-case-label">${ci.case_label}</span>
+        <div class="ci-case-text">${ci.case_text}</div>
+      </div>
+      <div class="ae-question">${ci.q}</div>
+      <div class="ci-drugs" id="ci-drugs">${drugsHtml}</div>
+      <div id="ci-fb"></div>
+    </div>`;
+}
+
+function answerP4(idx){
+  const ci=CONTRA[S.curIdx];
+  document.querySelectorAll('.ci-drug').forEach(d=>d.disabled=true);
+  const correct=idx===ci.correct_idx;
+  // Show all verdicts
+  ci.drugs.forEach((d,i)=>{
+    const el=document.getElementById('cidrug-'+i);
+    if(d.verdict==='danger') el.classList.add('danger');
+    else if(i===idx) el.classList.add(correct?'correct':'wrong');
+  });
+  if(correct){ S.streak++; if(S.streak>S.maxStreak)S.maxStreak=S.streak; addPts(15); S.modCorrect++; }
+  else { S.streak=0; }
+  document.getElementById('hdr-str').textContent=S.streak;
+  S.p4done=Math.max(S.p4done,S.curIdx+1);
+  const selectedDrug=ci.drugs[idx];
+  const fb=document.getElementById('ci-fb');
+  const allExp=ci.drugs.map(d=>`
+    <div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;line-height:1.6">
+      <strong style="color:${d.verdict==='danger'?'var(--red)':d.verdict==='safe'?'var(--green)':'var(--amber)'}">${d.abbr}</strong> — ${d.exp}
+    </div>`).join('');
+  fb.innerHTML=`
+    <div class="ae-exp ${correct?'ok':'bad'}" style="margin-top:1rem">
+      <strong>${correct?'✓ Identificaste correctamente el riesgo':'✗ '+ci.drugs[ci.correct_idx].abbr+' es la respuesta correcta'}</strong>
+      ${allExp}
+      <div class="ae-action"><strong>Referencia: </strong>${ci.stahl}</div>
+    </div>
+    <div class="btn-row">
+      <button class="btn primary" onclick="nextP4()">Siguiente →</button>
+    </div>`;
+}
+function nextP4(){ S.curIdx++; renderP4(); }
+
+/* ════════════════════════════════════════════════
+   FINISH
+════════════════════════════════════════════════ */
+function finishGame(g){
+  if(S.timerInt){clearInterval(S.timerInt);S.timerInt=null;}
+  const msgs={
+    profiler:`Completaste los ${PATIENTS.length} perfiles clínicos.`,
+    drill:`Completaste las ${DRILL_QS.length} preguntas de mecanismos.`,
+    adverse:`Completaste los ${ADVERSE.length} casos de efectos adversos.`,
+    contra:`Completaste los ${CONTRA.length} casos de contraindicaciones.`,
+  };
+  const total={profiler:PATIENTS.length*4,drill:DRILL_QS.length,adverse:ADVERSE.length,contra:CONTRA.length};
+  document.getElementById('fin-msg').textContent=msgs[g]||'';
+  document.getElementById('fin-pts').textContent=S.modPts;
+  document.getElementById('fin-acc').textContent=Math.round((S.modCorrect/(total[g]||1))*100)+'%';
+  document.getElementById('fin-str').textContent=S.maxStreak;
+  document.getElementById('fin-tot').textContent=S.pts;
+  updateHome(); showScreen('scr-finish');
+}
+
+// Init
+updateHome();
+</script>
+</body>
+</html>
